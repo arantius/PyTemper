@@ -64,12 +64,16 @@ class Temper:
 	
 	def read(self):
 		# Init
+		self.sdOut(1)
+		self.sdOut(0)
 		self.startIic()
 		self.writeStream('10011111')
+		self.sclk(1)
 
 		# Wait for ready
 		i=0
 		while self.sdIn() and i<0xC350:
+			print '.',
 			sleep(0.001)
 		
 		# Check status
@@ -84,6 +88,8 @@ class Temper:
 			s=self.sdIn()
 			self.hiLoSclk()
 			buf.append(s)
+		self.sclk(0)
+		self.hiLoSclk()
 		self.stopIic()
 
 		# Convert bit list into (centigrade) temperature
@@ -91,9 +97,11 @@ class Temper:
 		
 		# Convert to fahrenheit?
 		if self.mode=='f':
-			temp=( temp * 9.0/5.0 )+32;
+			temp=( temp * 9.0/5.0 )+32
 
 		return temp+self.offset
 
 if '__main__'==__name__:
-	print Temper(0, 0).read()
+	t=Temper(0, 0)
+	print t.read()
+	print t.read()
