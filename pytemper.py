@@ -51,6 +51,7 @@ class Temper:
 
 	def sdOut(self, n):
 		self.port.setRTS(n)
+		sleep(0.00001)
 	
 	def sclk(self, n):
 		self.port.setDTR(n)
@@ -67,7 +68,9 @@ class Temper:
 	def read(self):
 		# Init
 		self.sdOut(1)
+		self.sdIn()
 		self.sdOut(0)
+		self.sdIn()
 		self.startIic()
 		self.writeStream('10011111')
 		self.sclk(1)
@@ -75,8 +78,7 @@ class Temper:
 		# Wait for ready
 		i=0
 		while self.sdIn() and i<0xC350:
-			print '.',
-			sleep(0.001)
+			sleep(0.00001)
 		
 		# Check status
 		tt=self.sdIn()
@@ -90,12 +92,19 @@ class Temper:
 			s=self.sdIn()
 			self.hiLoSclk()
 			buf.append(s)
+
+			if i==7:  # don't ask me why!
+				self.sdIn()
+				self.hiLoSclk()
 		self.sclk(0)
 		self.hiLoSclk()
 		self.stopIic()
 
 		# Convert bit list into (centigrade) temperature
-		temp=reduce(lambda x,y: int(x)*2 + y, buf[1:11])/8.0
+		temp=reduce(lambda x,y: int(x)*2 + y, buf[0:11])
+		if buf[0]:
+			temp-=2048
+		temp/=8.0
 		
 		# Convert to fahrenheit?
 		if self.mode=='f':
@@ -104,6 +113,4 @@ class Temper:
 		return temp+self.offset
 
 if '__main__'==__name__:
-	t=Temper(0, 0)
-	print t.read()
-	print t.read()
+	print Temper(0, 0).read()
