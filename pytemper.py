@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 
 import serial
 from time import sleep
@@ -55,7 +55,7 @@ class Temper:
 
 	def sdOut(self, n):
 		self.port.setRTS(n)
-		sleep(0.00001)
+		sleep(0.001)
 	
 	def sclk(self, n):
 		self.port.setDTR(n)
@@ -82,7 +82,7 @@ class Temper:
 		# Wait for ready
 		i=0
 		while self.sdIn() and i<0xC350:
-			sleep(0.00001)
+			sleep(0.001)
 		
 		# Check status
 		tt=self.sdIn()
