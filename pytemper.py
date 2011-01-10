@@ -110,11 +110,13 @@ class Temper:
 		self.hiLoSclk()
 		self.stopIic()
 
-		# Convert bit list into (centigrade) temperature
-		temp=reduce(lambda x,y: int(x)*2 + y, buf[0:11])
+		# Read the first 12 results as bits of a two's complement signed integer.
+		bit_str = ''.join(['01'[int(x)] for x in buf[0:12]])
+		temp = int(bit_str, 2)
 		if buf[0]:
-			temp-=2048
-		temp/=8.0
+			temp -= 2**12
+		# Measurement is in 16ths of a Celsius degree.
+		temp /= 16.0
 		
 		# Convert to fahrenheit?
 		if self.mode=='f':
