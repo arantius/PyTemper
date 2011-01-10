@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 
 import serial
 from time import sleep
@@ -36,7 +36,13 @@ class Temper:
 		self.offset=offset
 		self.mode=mode
 
-		self.port=serial.Serial('/dev/ttyUSB'+`port`, rtscts=1)
+		try:
+			# Assume it's the number of a ttyUSB.
+			port = '/dev/ttyUSB%d' % port
+		except TypeError:
+			# Assume it's a valid device name.
+			pass
+		self.port=serial.Serial(port, rtscts=1)
 	
 	def startIic(self):
 		self.sdOut(1)
@@ -117,4 +123,17 @@ class Temper:
 		return temp+self.offset
 
 if '__main__'==__name__:
-	print Temper(0, 0).read()
+	import sys
+	try:
+		port = int(sys.argv[1])
+	except IndexError:
+		port = 0
+	except ValueError:
+		port = sys.argv[1]
+
+	try:
+		offset = float(sys.argv[2])
+	except IndexError, ValueError:
+		offset = 0
+
+	print Temper(port, offset).read()
